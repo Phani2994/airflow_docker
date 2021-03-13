@@ -1,0 +1,44 @@
+version: '3.7'
+services:
+    # postgres:
+    #     image: postgres:9.6
+    #     environment:
+    #         - POSTGRES_USER=airflow
+    #         - POSTGRES_PASSWORD=airflow
+    #         - POSTGRES_DB=airflow
+    #     logging:
+    #         options:
+    #             max-size: 10m
+    #             max-file: "3"
+    aiflow_db:
+        image: mysql:5.6
+        environment:
+            MYSQL_ROOT_PASSWORD: testing123
+            MYSQL_DATABASE: airflow
+            MYSQL_USER: admin
+            MYSQL_PASWWORD: testing123
+            MYSQL_PORT: 3306
+
+    webserver:
+        image: phani29/airflow_docker:1.10.14
+        restart: always
+        depends_on:
+            - aiflow_db
+        environment:
+            - LOAD_EX=n
+            - EXECUTOR=Local
+        logging:
+            options:
+                max-size: 10m
+                max-file: "3"
+        volumes:
+            - ./dags:/usr/local/airflow/dags
+            # - ./plugins:/usr/local/airflow/plugins
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
